@@ -1,5 +1,1 @@
-rootProject.name = 'subs-ena'
-
-include "subs-ena-agent-common"
-include "subs-ena-validator"
-include "subs-ena-agent"
+rootProject.name = 'subs-ena-agent'
