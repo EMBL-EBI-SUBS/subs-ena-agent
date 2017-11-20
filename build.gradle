@@ -1,0 +1,171 @@
+buildscript {
+	ext {
+		springBootVersion = '1.5.1.RELEASE'
+	}
+	repositories {
+		mavenCentral()
+	}
+	dependencies {
+		classpath "org.hidetake:gradle-ssh-plugin:1.1.3"
+		classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+	}
+}
+
+allprojects {
+	ext.version_base = '0.4.0-SNAPSHOT'
+	version = version_base
+	group = 'uk.ac.ebi.subs.ena'
+	ext.gradle_env = findProperty('env') ? env : 'dev'
+}
+
+subprojects {
+	apply plugin: 'java'
+	apply plugin: 'maven-publish'
+	apply plugin: 'maven'
+	apply plugin: 'org.hidetake.ssh'
+	apply plugin: 'org.springframework.boot'
+
+	repositories {
+		mavenLocal()
+		maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
+        maven { url "http://ena-dev:8081/artifactory/all" }
+		mavenCentral()
+	}
+
+	dependencyManagement {
+		resolutionStrategy {
+			cacheChangingModulesFor 0, 'seconds'
+		}
+	}
+
+	configurations.all {
+		resolutionStrategy {
+			cacheChangingModulesFor 0, 'seconds'
+		}
+	}
+
+	task wrapper(type: Wrapper) {
+		gradleVersion = '3.3'
+	}
+
+	processResources {
+		filesMatching('application.yml') {
+			expand(project.properties)
+		}
+	}
+
+	processTestResources {
+		filesMatching('application.yml') {
+			expand(project.properties)
+		}
+	}
+
+	ssh.settings {
+		user = 'sub_adm'
+	}
+
+	if (project.hasProperty('sshKeyFile')) {
+		ssh.settings.identity = new File(sshKeyFile)
+	}
+
+	if (project.hasProperty('sshPassphrase')) {
+		ssh.settings.passphrase = sshPassphrase
+	}
+
+	remotes {
+		dev {
+			host = 'mac-subs-001.ebi.ac.uk'
+		}
+	}
+
+	task printJarName {
+		doLast {
+			println "$jar.archivePath.name"
+		}
+
+	}
+
+	task printJarFullPath {
+		doLast {
+			println "$jar.archivePath.absolutePath"
+		}
+	}
+
+	remotes {
+		agent {
+			role('agent')
+			host = 'mac-subs-004'
+		}
+	}
+
+	remotes {
+		validator {
+			role('validator')
+			host = 'mac-subs-006'
+		}
+	}
+
+	remotes {
+		dumper {
+			role('validator')
+			host = 'mac-subs-008'
+		}
+	}
+
+	task sourceJar(type: Jar) { from sourceSets.main.allJava }
+
+	springBoot {
+		executable = false
+	}
+
+	task printClasspath doLast {
+		configurations.compile.each { println it }
+	}
+
+
+	publishing {
+		publications {
+			mavenJava(MavenPublication) {
+				from components.java
+				artifact sourceJar { classifier "sources" }
+			}
+		}
+		repositories {
+			maven {
+				credentials {
+					username artifactoryUsername
+					password artifactoryPassword
+				}
+				url "http://ena-dev:8081/artifactory/libs-snapshot-local"
+			}
+		}
+	}
+
+	task deployJar(type: SshTask, dependsOn: 'assemble') {
+		doLast {
+			File jarDeployDir = new File("/data/$gradle_env/$project.name/jar")
+			ssh.run {
+				session(remotes.role(gradle_env)) {
+					execute "/homes/sub_adm/create_dirs.sh $gradle_env $project.name", ignoreError: false
+					println "Uploading jar $jar.archivePath.name to $jarDeployDir area on $remote"
+					put(jar.archivePath.absolutePath, jarDeployDir.absolutePath)
+					println "creating symbolic link to $jar.archiveName"
+					def result = execute "ln -s -f $jarDeployDir/$jar.archiveName $jarDeployDir/$jar.baseName" + ".jar", ignoreError: true
+					println result
+					println "updating permissions of $jarDeployDir/$jar.archiveName"
+					execute "chmod u+x $jarDeployDir/*", ignoreError: false
+				}
+			}
+		}
+		ssh.settings {
+			knownHosts = allowAnyHosts
+		}
+	}
+
+}
+
+
+
+
+
+
