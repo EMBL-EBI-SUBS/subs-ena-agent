@@ -2,7 +2,7 @@ sudo: false
 language: java
 jdk:
 - oraclejdk8
-install: ./gradlew tasks
+install: ./gradlew assemble
 before_script:
 - sleep 15
 before_cache:
