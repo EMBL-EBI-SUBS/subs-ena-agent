@@ -17,6 +17,7 @@ import uk.ac.ebi.subs.processing.ProcessingCertificate;
 import uk.ac.ebi.subs.processing.ProcessingCertificateEnvelope;
 import uk.ac.ebi.subs.processing.SubmissionEnvelope;
 
+import java.util.Collections;
 import java.util.UUID;
 
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -83,9 +84,8 @@ public class EnaAgentSubmissionsProcessorTest {
         final Study study2 = TestHelper.getStudy(alias, team,"study_abstract","Whole Genome Sequencing");
         study2.setAccession(study.getAccession());
         final Attribute attribute = new Attribute();
-        attribute.setName("Test Update Attribute");
         attribute.setValue("Test Update Value");
-        study2.getAttributes().add(attribute);
+        study2.getAttributes().put("Test Update Attribute", Collections.singleton(attribute));
         study2.setId(UUID.randomUUID().toString());
 
         uk.ac.ebi.subs.data.Submission updateSubmission = new uk.ac.ebi.subs.data.Submission();
