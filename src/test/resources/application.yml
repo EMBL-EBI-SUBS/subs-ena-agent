@@ -4,3 +4,6 @@ ena:
   processor_list: ENAStudyProcessor,ENASampleProcessor,ENAExperimentProcessor
   submission:
     url: https://www-test.ebi.ac.uk/ena/submit/drop-box/submit
+  file_move:
+    webinFolderPath: src/test/resources/archivefolder
+    sourceBaseFolder: ready_to_agent
