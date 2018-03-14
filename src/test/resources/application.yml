@@ -7,3 +7,5 @@ ena:
   file_move:
     webinFolderPath: src/test/resources/archivefolder
     sourceBaseFolder: ready_to_agent
+    clusterName: oy-ena-login-1
+    username: test_user

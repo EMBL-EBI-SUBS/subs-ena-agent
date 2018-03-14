@@ -20,6 +20,12 @@ public class FileMoveService {
     @Value("${ena.file_move.sourceBaseFolder}")
     private String sourceBaseFolder;
 
+    @Value("${ena.file_move.clusterName}")
+    private String clusterName;
+
+    @Value("${ena.file_move.username}")
+    private String username;
+
     private static final String FILE_SEPARATOR = System.getProperty("file.separator");
 
     public void moveFile(String sourcePath) {
@@ -28,18 +34,32 @@ public class FileMoveService {
                 webinFolderPath , sourcePath.substring(sourcePath.indexOf(sourceBaseFolder) + sourceBaseFolder.length() + 1)
         );
 
+        String targetFolder = targetPath.substring(0, targetPath.lastIndexOf(FILE_SEPARATOR));
+
         LOGGER.info("Moving a file from {} to {}.", sourcePath, targetPath);
 
+        ProcessBuilder processBuilder = new ProcessBuilder("ssh",
+                clusterName + "@" + username,
+                "move_file_to_archive_storage.sh",
+                sourcePath,
+                targetPath,
+                targetFolder);
+
+        int exitValue = 0;
+        Process process;
 
         try {
-            if (!Files.exists(Paths.get(targetPath))) {
-                Files.createDirectories(Paths.get(targetPath.substring(0, targetPath.lastIndexOf(FILE_SEPARATOR))));
-                Files.move(Paths.get(sourcePath), Paths.get(targetPath));
-            } else {
-                Files.deleteIfExists(Paths.get(sourcePath));
-            }
-        } catch (IOException e) {
-            throw new RuntimeException("Could not execute the file move command.");
+            process = processBuilder.start();
+            process.waitFor();
+            exitValue = process.exitValue();
+        } catch (Exception e) {
+            throw new RuntimeException(
+                    String.format("The file move command went wrong with file: %s.", sourcePath));
+        }
+
+        if (exitValue != 0) {
+            throw new RuntimeException(
+                    String.format("The file move command went wrong with file: %s.", sourcePath));
         }
     }
 }

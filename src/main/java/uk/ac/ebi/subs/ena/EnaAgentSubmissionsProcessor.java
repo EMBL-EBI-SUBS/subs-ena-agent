@@ -36,7 +36,8 @@ public class EnaAgentSubmissionsProcessor {
 
     @Autowired
     public EnaAgentSubmissionsProcessor(RabbitMessagingTemplate rabbitMessagingTemplate, MessageConverter messageConverter,
-                                        ENAProcessorContainerService enaProcessorContainerService, FileMoveService fileMoveService) {
+                                        ENAProcessorContainerService enaProcessorContainerService,
+                                        FileMoveService fileMoveService) {
         this.rabbitMessagingTemplate = rabbitMessagingTemplate;
         this.rabbitMessagingTemplate.setMessageConverter(messageConverter);
         this.enaProcessorContainerService = enaProcessorContainerService;
