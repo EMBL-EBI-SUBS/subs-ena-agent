@@ -64,6 +64,18 @@ public class FileMoveServiceTest {
         assertTrue(Files.exists(Paths.get(String.join(FILE_SEPARATOR, webinFolderPath, fileAdditionalPath))));
     }
 
+    @Test
+    public void whenFileExistAlreadyInTargetLocation_ThenFileWillBeStillRemovedFromSourceStorage() throws IOException {
+        Path targetPath = Paths.get(String.join(FILE_SEPARATOR, webinFolderPath, fileAdditionalPath));
+        Files.createDirectories(targetPath.getParent());
+        Files.copy(Paths.get(fullSourcePath), targetPath);
+        
+        fileMoveService.moveFile(fullSourcePath);
+
+        assertTrue(Files.exists(targetPath));
+        assertTrue(!Files.exists(Paths.get(fullSourcePath)));
+    }
+
     private void createTestResources(String fullSourcePath) throws IOException {
         Files.createDirectories(Paths.get(
                 String.join(FILE_SEPARATOR,

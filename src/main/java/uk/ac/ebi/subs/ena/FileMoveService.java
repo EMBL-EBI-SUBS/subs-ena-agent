@@ -30,9 +30,14 @@ public class FileMoveService {
 
         LOGGER.info("Moving a file from {} to {}.", sourcePath, targetPath);
 
+
         try {
-            Files.createDirectories(Paths.get(targetPath.substring(0, targetPath.lastIndexOf(FILE_SEPARATOR))));
-            Files.move(Paths.get(sourcePath), Paths.get(targetPath));
+            if (!Files.exists(Paths.get(targetPath))) {
+                Files.createDirectories(Paths.get(targetPath.substring(0, targetPath.lastIndexOf(FILE_SEPARATOR))));
+                Files.move(Paths.get(sourcePath), Paths.get(targetPath));
+            } else {
+                Files.deleteIfExists(Paths.get(sourcePath));
+            }
         } catch (IOException e) {
             throw new RuntimeException("Could not execute the file move command.");
         }
