@@ -5,10 +5,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-
 @Service
 public class FileMoveService {
 
@@ -20,8 +16,8 @@ public class FileMoveService {
     @Value("${ena.file_move.sourceBaseFolder}")
     private String sourceBaseFolder;
 
-    @Value("${ena.file_move.clusterName}")
-    private String clusterName;
+    @Value("${ena.file_move.remoteHostName}")
+    private String remoteHostName;
 
     @Value("${ena.file_move.username}")
     private String username;
@@ -39,7 +35,7 @@ public class FileMoveService {
         LOGGER.info("Moving a file from {} to {}.", sourcePath, targetPath);
 
         ProcessBuilder processBuilder = new ProcessBuilder("ssh",
-                clusterName + "@" + username,
+                remoteHostName,
                 "move_file_to_archive_storage.sh",
                 sourcePath,
                 targetPath,
