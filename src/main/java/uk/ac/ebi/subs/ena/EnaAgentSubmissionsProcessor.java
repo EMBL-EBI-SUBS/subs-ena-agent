@@ -7,9 +7,6 @@ import org.springframework.amqp.rabbit.core.RabbitMessagingTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.converter.MessageConverter;
 import org.springframework.stereotype.Service;
-import uk.ac.ebi.subs.data.component.Archive;
-import uk.ac.ebi.subs.data.status.ProcessingStatusEnum;
-import uk.ac.ebi.subs.data.submittable.ENASubmittable;
 import uk.ac.ebi.subs.data.submittable.Submittable;
 import uk.ac.ebi.subs.ena.processor.ENAAgentProcessor;
 import uk.ac.ebi.subs.ena.processor.ENAProcessorContainerService;
@@ -35,11 +32,16 @@ public class EnaAgentSubmissionsProcessor {
 
     ENAProcessorContainerService enaProcessorContainerService;
 
+    FileMoveService fileMoveService;
+
     @Autowired
-    public EnaAgentSubmissionsProcessor(RabbitMessagingTemplate rabbitMessagingTemplate, MessageConverter messageConverter, ENAProcessorContainerService enaProcessorContainerService) {
+    public EnaAgentSubmissionsProcessor(RabbitMessagingTemplate rabbitMessagingTemplate, MessageConverter messageConverter,
+                                        ENAProcessorContainerService enaProcessorContainerService,
+                                        FileMoveService fileMoveService) {
         this.rabbitMessagingTemplate = rabbitMessagingTemplate;
         this.rabbitMessagingTemplate.setMessageConverter(messageConverter);
         this.enaProcessorContainerService = enaProcessorContainerService;
+        this.fileMoveService = fileMoveService;
     }
 
     @RabbitListener(queues = Queues.ENA_SAMPLES_UPDATED)
@@ -58,6 +60,8 @@ public class EnaAgentSubmissionsProcessor {
 
     @RabbitListener(queues = {Queues.ENA_AGENT})
     public void handleSubmission(SubmissionEnvelope submissionEnvelope) {
+        moveUploadedFilesToArchive(submissionEnvelope);
+
         ProcessingCertificateEnvelope processingCertificateEnvelope = processSubmission(submissionEnvelope);
 
         logger.info("received submission {}, most recent handler was ",
@@ -66,6 +70,12 @@ public class EnaAgentSubmissionsProcessor {
         rabbitMessagingTemplate.convertAndSend(Exchanges.SUBMISSIONS, Topics.EVENT_SUBMISSION_AGENT_RESULTS, processingCertificateEnvelope);
         logger.info("sent submission {}", submissionEnvelope.getSubmission().getId());
 
+    }
+
+    private void moveUploadedFilesToArchive(SubmissionEnvelope submissionEnvelope) {
+        submissionEnvelope.getUploadedFiles().forEach( uploadedFile -> {
+            fileMoveService.moveFile(uploadedFile.getPath());
+        });
     }
 
     ProcessingCertificateEnvelope processSubmission(SubmissionEnvelope submissionEnvelope)  {
