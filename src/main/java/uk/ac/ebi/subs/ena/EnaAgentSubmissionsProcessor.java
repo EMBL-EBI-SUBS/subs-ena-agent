@@ -80,9 +80,8 @@ public class EnaAgentSubmissionsProcessor {
 
     ProcessingCertificateEnvelope processSubmission(SubmissionEnvelope submissionEnvelope)  {
         List<ProcessingCertificate> processingCertificateList = new ArrayList<>();
-        final List<String> process = enaProcessor.process(submissionEnvelope);
-        ProcessingCertificate processingCertificate = new ProcessingCertificate();
-        if (processingCertificateList.isEmpty()) {
+        final List<String> errorMessageList = enaProcessor.process(submissionEnvelope);
+        if (errorMessageList.isEmpty()) {
             processingCertificateList = submissionEnvelope.allSubmissionItemsStream().map(
                     submittable -> new ProcessingCertificate(
                             submittable, Archive.Ena, ProcessingStatusEnum.Completed, submittable.getAccession())).collect(Collectors.toList());
