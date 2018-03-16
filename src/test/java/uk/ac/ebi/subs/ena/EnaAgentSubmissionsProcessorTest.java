@@ -48,9 +48,9 @@ public class EnaAgentSubmissionsProcessorTest {
         final Assay assay = TestHelper.getAssay(alias,team,alias,alias);
         submissionEnvelope.getAssays().add(assay);
         final ProcessingCertificateEnvelope processingCertificateEnvelope = enaAgentSubmissionsProcessor.processSubmission(submissionEnvelope);
-        ProcessingCertificate studyProcessingCertificate = new ProcessingCertificate(study, Archive.Ena, ProcessingStatusEnum.Received, study.getAccession());
-        ProcessingCertificate sampleProcessingCertificate = new ProcessingCertificate(sample, Archive.Ena, ProcessingStatusEnum.Received, sample.getAccession());
-        ProcessingCertificate assayProcessingCertificate = new ProcessingCertificate(assay, Archive.Ena, ProcessingStatusEnum.Received, assay.getAccession());
+        ProcessingCertificate studyProcessingCertificate = new ProcessingCertificate(study, Archive.Ena, ProcessingStatusEnum.Completed, study.getAccession());
+        ProcessingCertificate sampleProcessingCertificate = new ProcessingCertificate(sample, Archive.Ena, ProcessingStatusEnum.Completed, sample.getAccession());
+        ProcessingCertificate assayProcessingCertificate = new ProcessingCertificate(assay, Archive.Ena, ProcessingStatusEnum.Completed, assay.getAccession());
         assertThat("correct study certs",
                 processingCertificateEnvelope.getProcessingCertificates(),
                 containsInAnyOrder(
@@ -72,7 +72,7 @@ public class EnaAgentSubmissionsProcessorTest {
         SubmissionEnvelope submissionEnvelope = new SubmissionEnvelope(submission);
         submissionEnvelope.getStudies().add(study);
         final ProcessingCertificateEnvelope processingCertificateEnvelope = enaAgentSubmissionsProcessor.processSubmission(submissionEnvelope);
-        ProcessingCertificate studyProcessingCertificate = new ProcessingCertificate(study, Archive.Ena, ProcessingStatusEnum.Received, study.getAccession());
+        ProcessingCertificate studyProcessingCertificate = new ProcessingCertificate(study, Archive.Ena, ProcessingStatusEnum.Completed, study.getAccession());
         assertThat("correct study certs",
                 processingCertificateEnvelope.getProcessingCertificates(),
                 containsInAnyOrder(
@@ -94,7 +94,7 @@ public class EnaAgentSubmissionsProcessorTest {
         updateSubmissionEnvelope.getStudies().add(study2);
         final ProcessingCertificateEnvelope updateProcessingCertificateEnvelope = enaAgentSubmissionsProcessor.processSubmission(updateSubmissionEnvelope);
         ProcessingCertificate studyUpdateProcessingCertificate =
-                new ProcessingCertificate(study2, Archive.Ena, ProcessingStatusEnum.Received, study.getAccession());
+                new ProcessingCertificate(study2, Archive.Ena, ProcessingStatusEnum.Completed, study.getAccession());
         assertThat("correct study certs",
                 updateProcessingCertificateEnvelope.getProcessingCertificates(),
                 containsInAnyOrder(

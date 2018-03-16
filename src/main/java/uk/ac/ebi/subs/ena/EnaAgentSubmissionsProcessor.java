@@ -17,6 +17,7 @@ import uk.ac.ebi.subs.processing.ProcessingCertificate;
 import uk.ac.ebi.subs.processing.ProcessingCertificateEnvelope;
 import uk.ac.ebi.subs.processing.SubmissionEnvelope;
 import uk.ac.ebi.subs.processing.UpdatedSamplesEnvelope;
+import uk.ac.ebi.subs.validator.data.SingleValidationResult;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -80,8 +81,8 @@ public class EnaAgentSubmissionsProcessor {
 
     ProcessingCertificateEnvelope processSubmission(SubmissionEnvelope submissionEnvelope)  {
         List<ProcessingCertificate> processingCertificateList = new ArrayList<>();
-        final List<String> errorMessageList = enaProcessor.process(submissionEnvelope);
-        if (errorMessageList.isEmpty()) {
+        final List<SingleValidationResult> validationResultList = enaProcessor.process(submissionEnvelope);
+        if (validationResultList.isEmpty()) {
             processingCertificateList = submissionEnvelope.allSubmissionItemsStream().map(
                     submittable -> new ProcessingCertificate(
                             submittable, Archive.Ena, ProcessingStatusEnum.Completed, submittable.getAccession())).collect(Collectors.toList());
