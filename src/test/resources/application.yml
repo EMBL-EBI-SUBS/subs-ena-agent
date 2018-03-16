@@ -9,3 +9,4 @@ ena:
     sourceBaseFolder: ready_to_agent
     remoteHostName: oy-ena-login-1
     username: test_user
+  action_services: StudyActionService,SampleActionService,AssayActionService,AssayDataActionService
