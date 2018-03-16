@@ -7,9 +7,9 @@ import org.springframework.amqp.rabbit.core.RabbitMessagingTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.converter.MessageConverter;
 import org.springframework.stereotype.Service;
-import uk.ac.ebi.subs.data.submittable.Submittable;
-import uk.ac.ebi.subs.ena.processor.ENAAgentProcessor;
-import uk.ac.ebi.subs.ena.processor.ENAProcessorContainerService;
+import uk.ac.ebi.subs.data.component.Archive;
+import uk.ac.ebi.subs.data.status.ProcessingStatusEnum;
+import uk.ac.ebi.subs.ena.processor.ENAProcessor;
 import uk.ac.ebi.subs.messaging.Exchanges;
 import uk.ac.ebi.subs.messaging.Queues;
 import uk.ac.ebi.subs.messaging.Topics;
@@ -21,6 +21,7 @@ import uk.ac.ebi.subs.validator.data.SingleValidationResult;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -30,17 +31,17 @@ public class EnaAgentSubmissionsProcessor {
 
     RabbitMessagingTemplate rabbitMessagingTemplate;
 
-    ENAProcessorContainerService enaProcessorContainerService;
+    ENAProcessor enaProcessor;
 
     FileMoveService fileMoveService;
 
     @Autowired
     public EnaAgentSubmissionsProcessor(RabbitMessagingTemplate rabbitMessagingTemplate, MessageConverter messageConverter,
-                                        ENAProcessorContainerService enaProcessorContainerService,
+                                        ENAProcessor enaProcessor,
                                         FileMoveService fileMoveService) {
         this.rabbitMessagingTemplate = rabbitMessagingTemplate;
         this.rabbitMessagingTemplate.setMessageConverter(messageConverter);
-        this.enaProcessorContainerService = enaProcessorContainerService;
+        this.enaProcessor = enaProcessor;
         this.fileMoveService = fileMoveService;
     }
 
@@ -80,14 +81,17 @@ public class EnaAgentSubmissionsProcessor {
 
     ProcessingCertificateEnvelope processSubmission(SubmissionEnvelope submissionEnvelope)  {
         List<ProcessingCertificate> processingCertificateList = new ArrayList<>();
-
-        for (ENAAgentProcessor enaAgentProcessor : enaProcessorContainerService.getENAAgentProcessorList()) {
-            final List<Submittable> submittables = enaAgentProcessor.getSubmittables(submissionEnvelope);
-            for (Submittable submittable : submittables) {
-                ProcessingCertificate processingCertificate = enaAgentProcessor.processAndConvertSubmittable(submittable,new ArrayList<SingleValidationResult>());
-                processingCertificateList.add(processingCertificate);
-            }
+        final List<SingleValidationResult> validationResultList = enaProcessor.process(submissionEnvelope);
+        if (validationResultList.isEmpty()) {
+            processingCertificateList = submissionEnvelope.allSubmissionItemsStream().map(
+                    submittable -> new ProcessingCertificate(
+                            submittable, Archive.Ena, ProcessingStatusEnum.Completed, submittable.getAccession())).collect(Collectors.toList());
+        } else {
+            processingCertificateList = submissionEnvelope.allSubmissionItemsStream().map(
+                    submittable -> new ProcessingCertificate(
+                            submittable, Archive.Ena, ProcessingStatusEnum.Error)).collect(Collectors.toList());
         }
+
 
         return new ProcessingCertificateEnvelope(submissionEnvelope.getSubmission().getId(),processingCertificateList);
     }
