@@ -19,29 +19,26 @@ public class FileMoveService {
     @Value("${ena.file_move.remoteHostName}")
     private String remoteHostName;
 
-    @Value("${ena.file_move.username}")
-    private String username;
+    @Value("${ena.file_move.scriptPath}")
+    private String scriptPath;
 
     private static final String FILE_SEPARATOR = System.getProperty("file.separator");
 
     public void moveFile(String sourcePath) {
 
-        String targetPath = String.join(FILE_SEPARATOR,
-                webinFolderPath , sourcePath.substring(sourcePath.indexOf(sourceBaseFolder) + sourceBaseFolder.length() + 1)
-        );
+        final String relativeFilePath = sourcePath.substring(sourcePath.indexOf(sourceBaseFolder) + sourceBaseFolder.length() + 1);
+        final String sourceBasePath = sourcePath.substring(0, sourcePath.indexOf(sourceBaseFolder) - 1);
 
-        String targetFolder = targetPath.substring(0, targetPath.lastIndexOf(FILE_SEPARATOR));
-
-        LOGGER.info("Moving a file from {} to {}.", sourcePath, targetPath);
+        LOGGER.info("Moving a file from {} to {}.", sourcePath, String.join(FILE_SEPARATOR, webinFolderPath, relativeFilePath));
 
         ProcessBuilder processBuilder = new ProcessBuilder("ssh",
                 remoteHostName,
-                "move_file_to_archive_storage.sh",
-                sourcePath,
-                targetPath,
-                targetFolder);
+                String.join(FILE_SEPARATOR, scriptPath, "move_file_to_archive_storage.sh"),
+                relativeFilePath,
+                sourceBasePath,
+                webinFolderPath);
 
-        int exitValue = 0;
+        int exitValue;
         Process process;
 
         try {

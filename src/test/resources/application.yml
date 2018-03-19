@@ -8,5 +8,6 @@ ena:
     webinFolderPath: src/test/resources/archivefolder
     sourceBaseFolder: ready_to_agent
     remoteHostName: oy-ena-login-1
-    username: test_user
+    scriptPath: /homes/test_user/file-upload
+
   action_services: StudyActionService,SampleActionService,AssayActionService,AssayDataActionService
