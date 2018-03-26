@@ -2,6 +2,7 @@ package uk.ac.ebi.subs.ena;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -101,6 +102,7 @@ public class EnaAgentSubmissionsProcessorTest {
     }
 
     @Test
+    @Category(SSHDependentTest.class)
     public void whenUploadedFilesHasData_ThenItWillBeInsertedIntoFileMetadata() throws Exception {
         String alias = UUID.randomUUID().toString();
         final Team team = TestHelper.getTeam("test-team");
