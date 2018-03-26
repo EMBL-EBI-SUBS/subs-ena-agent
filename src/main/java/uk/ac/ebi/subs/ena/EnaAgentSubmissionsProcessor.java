@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.amqp.rabbit.core.RabbitMessagingTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.messaging.converter.MessageConverter;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.subs.data.component.Archive;
@@ -17,10 +18,12 @@ import uk.ac.ebi.subs.processing.ProcessingCertificate;
 import uk.ac.ebi.subs.processing.ProcessingCertificateEnvelope;
 import uk.ac.ebi.subs.processing.SubmissionEnvelope;
 import uk.ac.ebi.subs.processing.UpdatedSamplesEnvelope;
+import uk.ac.ebi.subs.processing.fileupload.UploadedFile;
 import uk.ac.ebi.subs.validator.data.SingleValidationResult;
 
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 
@@ -28,6 +31,9 @@ import java.util.stream.Collectors;
 public class EnaAgentSubmissionsProcessor {
 
     private static final Logger logger = LoggerFactory.getLogger(EnaAgentSubmissionsProcessor.class);
+
+    @Value("${ena.file_move.webinFolderPath}")
+    private String webinFolderPath;
 
     RabbitMessagingTemplate rabbitMessagingTemplate;
 
@@ -73,14 +79,13 @@ public class EnaAgentSubmissionsProcessor {
 
     }
 
-    private void moveUploadedFilesToArchive(SubmissionEnvelope submissionEnvelope) {
-        submissionEnvelope.getUploadedFiles().forEach( uploadedFile -> {
-            fileMoveService.moveFile(uploadedFile.getPath());
-        });
-    }
-
     ProcessingCertificateEnvelope processSubmission(SubmissionEnvelope submissionEnvelope)  {
-        List<ProcessingCertificate> processingCertificateList = new ArrayList<>();
+        List<ProcessingCertificate> processingCertificateList;
+
+        if (submissionEnvelope.getAssayData().size() > 0) {
+            injectPathAndChecksum(submissionEnvelope);
+        }
+
         final List<SingleValidationResult> validationResultList = enaProcessor.process(submissionEnvelope);
         if (validationResultList.isEmpty()) {
             processingCertificateList = submissionEnvelope.allSubmissionItemsStream().map(
@@ -96,5 +101,27 @@ public class EnaAgentSubmissionsProcessor {
         return new ProcessingCertificateEnvelope(submissionEnvelope.getSubmission().getId(),processingCertificateList);
     }
 
+    private void injectPathAndChecksum(SubmissionEnvelope submissionEnvelope) {
+        Map<String, UploadedFile> uploadedFileMap = filesByFilename(submissionEnvelope.getUploadedFiles());
+        submissionEnvelope.getAssayData().forEach(assayData -> {
+            assayData.getFiles().forEach( file -> {
+                UploadedFile uploadedFile = uploadedFileMap.get(file.getName());
+                file.setChecksum(uploadedFile.getChecksum());
+                file.setName(uploadedFile.getPath());
+            });
+        });
+    }
 
+    private void moveUploadedFilesToArchive(SubmissionEnvelope submissionEnvelope) {
+        submissionEnvelope.getUploadedFiles().forEach( uploadedFile -> {
+            fileMoveService.moveFile(uploadedFile.getPath());
+        });
+    }
+
+    Map<String, UploadedFile> filesByFilename(List<UploadedFile> files) {
+        Map<String, UploadedFile> filesByFilename = new HashMap<>();
+        files.forEach(file -> filesByFilename.put(file.getFilename(), file));
+
+        return filesByFilename;
+    }
 }
