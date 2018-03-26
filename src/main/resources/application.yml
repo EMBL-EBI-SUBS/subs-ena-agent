@@ -5,3 +5,5 @@ ena:
   password: ${enaPassword}
   submission:
     url: https://www-test.ebi.ac.uk/ena/submit/drop-box/submit
+  file_move:
+    webinFolderPath: /fire/staging/era/upload/Webin-46220

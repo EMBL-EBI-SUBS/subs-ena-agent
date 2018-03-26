@@ -17,3 +17,4 @@ cache:
 before_install:
 - openssl aes-256-cbc -K $encrypted_1c9b4450e523_key -iv $encrypted_1c9b4450e523_iv
   -in gradle.properties.enc -out gradle.properties -d
+script: "./gradlew externalCiTest"

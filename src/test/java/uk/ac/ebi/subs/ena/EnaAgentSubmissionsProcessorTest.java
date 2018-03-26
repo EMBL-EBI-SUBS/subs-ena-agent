@@ -56,9 +56,7 @@ public class EnaAgentSubmissionsProcessorTest {
                 containsInAnyOrder(
                         studyProcessingCertificate, sampleProcessingCertificate,assayProcessingCertificate
                 )
-
         );
-
     }
 
     @Test
@@ -103,5 +101,4 @@ public class EnaAgentSubmissionsProcessorTest {
 
         );
     }
-
 }

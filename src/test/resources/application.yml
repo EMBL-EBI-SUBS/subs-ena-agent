@@ -1,13 +1,16 @@
 ena:
+  hostname: oy-ena-login-1
   login_name: ${enaLoginName}
   password: ${enaPassword}
   processor_list: ENAStudyProcessor,ENASampleProcessor,ENAExperimentProcessor
   submission:
     url: https://www-test.ebi.ac.uk/ena/submit/drop-box/submit
   file_move:
-    webinFolderPath: src/test/resources/archivefolder
+    webinFolderPath: /fire/staging/era/upload/Webin-46220
     sourceBaseFolder: ready_to_agent
     remoteHostName: oy-ena-login-1
     scriptPath: /homes/test_user/file-upload
 
   action_services: StudyActionService,SampleActionService,AssayActionService,AssayDataActionService
+  test_login: sub_adm
+
