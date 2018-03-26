@@ -47,12 +47,16 @@ processTestResources {
     }
 }
 
-test {
+task('externalCiTest', type: Test) {
+    useJUnit {
+        excludeCategories 'uk.ac.ebi.subs.ena.SSHDependentTest'
+    }
     testLogging {
         events "passed", "skipped", "failed"
-        exceptionFormat "full"
+        exceptionFormat = 'full'
     }
 }
+
 
 uploadArchives {
     repositories {
