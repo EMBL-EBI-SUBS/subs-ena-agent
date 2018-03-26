@@ -72,6 +72,7 @@ public class EnaAgentAssayDataSubmissionsProcessorTest {
     }
 
     @Test
+    @Category(SSHDependentTest.class)
     public void whenUploadedFilesHasData_ThenItWillBeInsertedIntoFileMetadata() throws Exception {
         String alias = UUID.randomUUID().toString();
         final Team team = TestHelper.getTeam("test-team");
