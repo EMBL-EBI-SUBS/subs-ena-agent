@@ -10,3 +10,4 @@ classes
 gradle.properties
 */application.pid
 **/application.pid
+*.iml
