@@ -80,6 +80,6 @@ public class FileMoveService {
                 relativeFilePath,
                 sourceBasePath,
                 webinFolderPath
-        )
+        );
     }
 }
