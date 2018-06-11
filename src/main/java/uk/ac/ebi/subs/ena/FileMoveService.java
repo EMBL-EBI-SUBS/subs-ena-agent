@@ -5,6 +5,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.util.Arrays;
+
 @Service
 public class FileMoveService {
 
@@ -22,6 +24,9 @@ public class FileMoveService {
     @Value("${ena.file_move.scriptPath}")
     private String scriptPath;
 
+    @Value("${ena.fileMoveProcessUserName}")
+    private String fileMoveUsername;
+
     private static final String FILE_SEPARATOR = System.getProperty("file.separator");
 
     public void moveFile(String sourcePath) {
@@ -31,17 +36,21 @@ public class FileMoveService {
 
         LOGGER.info("Moving a file from {} to {}.", sourcePath, String.join(FILE_SEPARATOR, webinFolderPath, relativeFilePath));
 
-        ProcessBuilder processBuilder = new ProcessBuilder("ssh",
-                remoteHostName,
-                String.join(FILE_SEPARATOR, scriptPath, "move_file_to_archive_storage.sh"),
-                relativeFilePath,
-                sourceBasePath,
-                webinFolderPath);
+        String[] moveCommandToExecute= {
+                "ssh",
+                remoteLogin(),
+                fileMoveCommand(relativeFilePath, sourceBasePath)
+        };
+
+        LOGGER.info("Executing the following command: {}.", Arrays.toString(moveCommandToExecute));
+
+        ProcessBuilder processBuilder = new ProcessBuilder(moveCommandToExecute);
 
         int exitValue;
         Process process;
 
         try {
+            processBuilder.inheritIO();
             process = processBuilder.start();
             process.waitFor();
             exitValue = process.exitValue();
@@ -54,5 +63,23 @@ public class FileMoveService {
             throw new RuntimeException(
                     String.format("The file move command went wrong with file: %s.", sourcePath));
         }
+    }
+
+    private String remoteLogin() {
+        StringBuilder sb = new StringBuilder();
+        sb.append(fileMoveUsername);
+        sb.append("@");
+        sb.append(remoteHostName);
+
+        return sb.toString();
+    }
+
+    private String fileMoveCommand(String relativeFilePath, String sourceBasePath) {
+        return String.join(" ",
+                String.join(FILE_SEPARATOR, scriptPath, "move_file_to_archive_storage.sh"),
+                relativeFilePath,
+                sourceBasePath,
+                webinFolderPath
+        )
     }
 }
