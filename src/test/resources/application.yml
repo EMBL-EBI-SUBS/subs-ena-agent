@@ -5,6 +5,7 @@ ena:
   processor_list: ENAStudyProcessor,ENASampleProcessor,ENAExperimentProcessor
   submission:
     url: https://www-test.ebi.ac.uk/ena/submit/drop-box/submit
+  fileMoveProcessUserName: fileuploadusername
   file_move:
     webinFolderPath: /fire/staging/era/upload/Webin-46220
     sourceBaseFolder: ready_to_agent
