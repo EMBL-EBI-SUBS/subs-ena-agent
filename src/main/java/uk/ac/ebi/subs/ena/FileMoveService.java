@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.io.File;
 import java.util.Arrays;
 
 @Service
@@ -26,6 +27,9 @@ public class FileMoveService {
 
     @Value("${ena.fileMoveProcessUserName}")
     private String fileMoveUsername;
+
+    @Value("${ena.file_move.logFilePath}")
+    private String logFilePath;
 
     private static final String FILE_SEPARATOR = System.getProperty("file.separator");
 
@@ -50,7 +54,9 @@ public class FileMoveService {
         Process process;
 
         try {
-            processBuilder.inheritIO();
+            File logFile = new File(logFilePath);
+            processBuilder.redirectErrorStream(true);
+            processBuilder.redirectOutput(logFile);
             process = processBuilder.start();
             process.waitFor();
             exitValue = process.exitValue();
