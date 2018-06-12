@@ -11,6 +11,7 @@ ena:
     sourceBaseFolder: ready_to_agent
     remoteHostName: sra-login-1
     scriptPath: /homes/test_user/file-upload
+    logFilePath: /data/filemove.log
 
   action_services: StudyActionService,SampleActionService,AssayActionService,AssayDataActionService
   test_login: sub_adm
