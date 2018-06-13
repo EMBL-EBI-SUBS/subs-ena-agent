@@ -107,7 +107,7 @@ public class EnaAgentSubmissionsProcessor {
             assayData.getFiles().forEach( file -> {
                 UploadedFile uploadedFile = uploadedFileMap.get(file.getName());
                 file.setChecksum(uploadedFile.getChecksum());
-                file.setName(uploadedFile.getPath());
+                file.setName(fileMoveService.getRelativeFilePath(uploadedFile.getPath()));
             });
         });
     }
