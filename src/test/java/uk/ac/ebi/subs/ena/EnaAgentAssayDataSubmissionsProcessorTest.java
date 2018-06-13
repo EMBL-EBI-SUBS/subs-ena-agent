@@ -63,6 +63,9 @@ public class EnaAgentAssayDataSubmissionsProcessorTest {
     @Autowired
     EnaAgentSubmissionsProcessor enaAgentSubmissionsProcessor;
 
+    @Autowired
+    FileMoveService fileMoveService;
+
     @Before
     public void setup() {
         REMOTE_MKDIR_FOR_WEBIN_TEST =
@@ -100,14 +103,14 @@ public class EnaAgentAssayDataSubmissionsProcessorTest {
 
         UploadedFile uploadedFile = new UploadedFile();
         uploadedFile.setChecksum("1234567890abcdefabcd1234567890ab");
-        final String remoteFilePath = "EnaAgentSubmissionsProcessorTest/to/the/file";
+        final String remoteFilePath = "ready_to_agent/EnaAgentSubmissionsProcessorTest/to/the/file";
 
         uploadedFile.setPath(String.join("/", remoteFilePath, filename));
         uploadedFile.setFilename(filename);
         createTestFile(filename);
 
         executeRemoteCommand("ssh", remoteLogin().toString(), REMOTE_MKDIR_FOR_WEBIN_TEST);
-        executeRemoteCommand("scp", filename, getRemoteServerPath(remoteFilePath));
+        executeRemoteCommand("scp", filename, getRemoteServerPath(fileMoveService.getRelativeFilePath(remoteFilePath)));
 
         submissionEnvelope.getUploadedFiles().add(uploadedFile);
 
@@ -125,7 +128,8 @@ public class EnaAgentAssayDataSubmissionsProcessorTest {
         );
 
         final List<String> filePaths =
-                submissionEnvelope.getUploadedFiles().stream().map(UploadedFile::getPath)
+                submissionEnvelope.getUploadedFiles().stream().map(uploadedFileFromSubmissionEnvelope ->
+                        fileMoveService.getRelativeFilePath(uploadedFileFromSubmissionEnvelope.getPath()))
                         .collect(Collectors.toList());
 
         submissionEnvelope.getAssayData().forEach(processedAssayData -> {

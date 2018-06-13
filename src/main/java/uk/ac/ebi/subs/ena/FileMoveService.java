@@ -33,9 +33,13 @@ public class FileMoveService {
 
     private static final String FILE_SEPARATOR = System.getProperty("file.separator");
 
+    public String getRelativeFilePath(String sourcePath) {
+        return sourcePath.substring(sourcePath.indexOf(sourceBaseFolder) + sourceBaseFolder.length() + 1);
+    }
+
     public void moveFile(String sourcePath) {
 
-        final String relativeFilePath = sourcePath.substring(sourcePath.indexOf(sourceBaseFolder) + sourceBaseFolder.length() + 1);
+        final String relativeFilePath = getRelativeFilePath(sourcePath);
         final String sourceBasePath = sourcePath.substring(0, sourcePath.indexOf(sourceBaseFolder) + sourceBaseFolder.length());
 
         LOGGER.info("Moving a file from {} to {}.", sourcePath, String.join(FILE_SEPARATOR, webinFolderPath, relativeFilePath));
