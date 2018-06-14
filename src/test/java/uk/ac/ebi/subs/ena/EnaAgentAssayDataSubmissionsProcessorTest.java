@@ -90,7 +90,7 @@ public class EnaAgentAssayDataSubmissionsProcessorTest {
         final Sample sample = TestHelper.getSample(alias, team);
         submissionEnvelope.getSamples().add(sample);
 
-        final Assay assay = TestHelper.getAssay(alias,team,alias,alias);
+        final Assay assay = TestHelper.getAssay(alias, team, TestAccessions.BIOSAMPLE_ACCESSION, alias);
         submissionEnvelope.getAssays().add(assay);
 
         final String filename = UUID.randomUUID().toString() + "_test.fastq.gz";
