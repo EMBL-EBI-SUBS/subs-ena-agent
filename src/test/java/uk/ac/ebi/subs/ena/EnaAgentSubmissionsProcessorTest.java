@@ -45,7 +45,7 @@ public class EnaAgentSubmissionsProcessorTest {
         submissionEnvelope.getStudies().add(study);
         final Sample sample = TestHelper.getSample(alias, team);
         submissionEnvelope.getSamples().add(sample);
-        final Assay assay = TestHelper.getAssay(alias,team,alias,alias);
+        final Assay assay = TestHelper.getAssay(alias, team, TestAccessions.BIOSAMPLE_ACCESSION, alias);
         submissionEnvelope.getAssays().add(assay);
         final ProcessingCertificateEnvelope processingCertificateEnvelope = enaAgentSubmissionsProcessor.processSubmission(submissionEnvelope);
         ProcessingCertificate studyProcessingCertificate = new ProcessingCertificate(study, Archive.Ena, ProcessingStatusEnum.Completed, study.getAccession());
