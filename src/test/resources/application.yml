@@ -13,6 +13,6 @@ ena:
     scriptPath: /homes/test_user/file-upload
     logFilePath: /data/filemove.log
 
-  action_services: StudyActionService,SampleActionService,AssayActionService,AssayDataActionService
+  action_services: StudyActionService,AssayActionService,AssayDataActionService
   test_login: sub_adm
 

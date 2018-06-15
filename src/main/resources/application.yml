@@ -8,3 +8,7 @@ ena:
   file_move:
     webinFolderPath: /fire/staging/era/upload/Webin-46220
     logFilePath: /data/filemove.log
+  typeProcessing:
+    samplesEnabled: false
+  action_services: StudyActionService,AssayActionService,AssayDataActionService
+
