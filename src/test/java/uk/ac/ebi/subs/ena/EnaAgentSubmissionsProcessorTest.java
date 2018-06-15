@@ -49,12 +49,11 @@ public class EnaAgentSubmissionsProcessorTest {
         submissionEnvelope.getAssays().add(assay);
         final ProcessingCertificateEnvelope processingCertificateEnvelope = enaAgentSubmissionsProcessor.processSubmission(submissionEnvelope);
         ProcessingCertificate studyProcessingCertificate = new ProcessingCertificate(study, Archive.Ena, ProcessingStatusEnum.Completed, study.getAccession());
-        ProcessingCertificate sampleProcessingCertificate = new ProcessingCertificate(sample, Archive.Ena, ProcessingStatusEnum.Completed, sample.getAccession());
         ProcessingCertificate assayProcessingCertificate = new ProcessingCertificate(assay, Archive.Ena, ProcessingStatusEnum.Completed, assay.getAccession());
         assertThat("correct study certs",
                 processingCertificateEnvelope.getProcessingCertificates(),
                 containsInAnyOrder(
-                        studyProcessingCertificate, sampleProcessingCertificate,assayProcessingCertificate
+                        studyProcessingCertificate, assayProcessingCertificate
                 )
         );
     }
