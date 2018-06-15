@@ -107,6 +107,10 @@ public class EnaAgentSubmissionsProcessor {
             );
         }
 
+        if (!validationResultList.isEmpty()){
+            logger.error("error messages during submission: {}",validationResultList );
+        }
+
         for (Submittable submittable : submissionEnvelope.allSubmissionItems()){
             if (Sample.class.isAssignableFrom(submittable.getClass()) || Project.class.isAssignableFrom(submittable.getClass())){
                 continue; //these objects aren't owned by ENA
