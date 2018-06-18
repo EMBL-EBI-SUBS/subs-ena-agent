@@ -63,6 +63,9 @@ public class EnaAgentAssayDataSubmissionsProcessorTest {
     @Autowired
     EnaAgentSubmissionsProcessor enaAgentSubmissionsProcessor;
 
+    @Autowired
+    FileMoveService fileMoveService;
+
     @Before
     public void setup() {
         REMOTE_MKDIR_FOR_WEBIN_TEST =
@@ -87,7 +90,7 @@ public class EnaAgentAssayDataSubmissionsProcessorTest {
         final Sample sample = TestHelper.getSample(alias, team);
         submissionEnvelope.getSamples().add(sample);
 
-        final Assay assay = TestHelper.getAssay(alias,team,alias,alias);
+        final Assay assay = TestHelper.getAssay(alias, team, TestAccessions.BIOSAMPLE_ACCESSION, alias);
         submissionEnvelope.getAssays().add(assay);
 
         final String filename = UUID.randomUUID().toString() + "_test.fastq.gz";
@@ -100,32 +103,32 @@ public class EnaAgentAssayDataSubmissionsProcessorTest {
 
         UploadedFile uploadedFile = new UploadedFile();
         uploadedFile.setChecksum("1234567890abcdefabcd1234567890ab");
-        final String remoteFilePath = "EnaAgentSubmissionsProcessorTest/to/the/file";
+        final String remoteFilePath = "ready_to_agent/EnaAgentSubmissionsProcessorTest/to/the/file";
 
         uploadedFile.setPath(String.join("/", remoteFilePath, filename));
         uploadedFile.setFilename(filename);
         createTestFile(filename);
 
         executeRemoteCommand("ssh", remoteLogin().toString(), REMOTE_MKDIR_FOR_WEBIN_TEST);
-        executeRemoteCommand("scp", filename, getRemoteServerPath(remoteFilePath));
+        executeRemoteCommand("scp", filename, getRemoteServerPath(fileMoveService.getRelativeFilePath(remoteFilePath)));
 
         submissionEnvelope.getUploadedFiles().add(uploadedFile);
 
         final ProcessingCertificateEnvelope processingCertificateEnvelope = enaAgentSubmissionsProcessor.processSubmission(submissionEnvelope);
         ProcessingCertificate studyProcessingCertificate = new ProcessingCertificate(study, Archive.Ena, ProcessingStatusEnum.Completed, study.getAccession());
-        ProcessingCertificate sampleProcessingCertificate = new ProcessingCertificate(sample, Archive.Ena, ProcessingStatusEnum.Completed, sample.getAccession());
         ProcessingCertificate assayProcessingCertificate = new ProcessingCertificate(assay, Archive.Ena, ProcessingStatusEnum.Completed, assay.getAccession());
         ProcessingCertificate assayDataProcessingCertificate = new ProcessingCertificate(assayData, Archive.Ena, ProcessingStatusEnum.Completed, assayData.getAccession());
         assertThat("correct assayData certs",
                 processingCertificateEnvelope.getProcessingCertificates(),
                 containsInAnyOrder(
-                        studyProcessingCertificate, sampleProcessingCertificate,
+                        studyProcessingCertificate,
                         assayProcessingCertificate, assayDataProcessingCertificate
                 )
         );
 
         final List<String> filePaths =
-                submissionEnvelope.getUploadedFiles().stream().map(UploadedFile::getPath)
+                submissionEnvelope.getUploadedFiles().stream().map(uploadedFileFromSubmissionEnvelope ->
+                        fileMoveService.getRelativeFilePath(uploadedFileFromSubmissionEnvelope.getPath()))
                         .collect(Collectors.toList());
 
         submissionEnvelope.getAssayData().forEach(processedAssayData -> {

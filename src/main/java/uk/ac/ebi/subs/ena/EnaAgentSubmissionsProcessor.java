@@ -10,6 +10,9 @@ import org.springframework.messaging.converter.MessageConverter;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.subs.data.component.Archive;
 import uk.ac.ebi.subs.data.status.ProcessingStatusEnum;
+import uk.ac.ebi.subs.data.submittable.Project;
+import uk.ac.ebi.subs.data.submittable.Sample;
+import uk.ac.ebi.subs.data.submittable.Submittable;
 import uk.ac.ebi.subs.ena.processor.ENAProcessor;
 import uk.ac.ebi.subs.messaging.Exchanges;
 import uk.ac.ebi.subs.messaging.Queues;
@@ -20,12 +23,13 @@ import uk.ac.ebi.subs.processing.SubmissionEnvelope;
 import uk.ac.ebi.subs.processing.UpdatedSamplesEnvelope;
 import uk.ac.ebi.subs.processing.fileupload.UploadedFile;
 import uk.ac.ebi.subs.validator.data.SingleValidationResult;
+import uk.ac.ebi.subs.validator.data.ValidationResult;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-
 
 @Service
 public class EnaAgentSubmissionsProcessor {
@@ -40,6 +44,9 @@ public class EnaAgentSubmissionsProcessor {
     ENAProcessor enaProcessor;
 
     FileMoveService fileMoveService;
+
+    private static final ProcessingStatusEnum COMPLETED = ProcessingStatusEnum.Completed;
+    private static final ProcessingStatusEnum ERROR = ProcessingStatusEnum.Error;
 
     @Autowired
     public EnaAgentSubmissionsProcessor(RabbitMessagingTemplate rabbitMessagingTemplate, MessageConverter messageConverter,
@@ -79,41 +86,68 @@ public class EnaAgentSubmissionsProcessor {
 
     }
 
-    ProcessingCertificateEnvelope processSubmission(SubmissionEnvelope submissionEnvelope)  {
-        List<ProcessingCertificate> processingCertificateList;
+    ProcessingCertificateEnvelope processSubmission(SubmissionEnvelope submissionEnvelope) {
 
         if (submissionEnvelope.getAssayData().size() > 0) {
             injectPathAndChecksum(submissionEnvelope);
         }
 
         final List<SingleValidationResult> validationResultList = enaProcessor.process(submissionEnvelope);
-        if (validationResultList.isEmpty()) {
-            processingCertificateList = submissionEnvelope.allSubmissionItemsStream().map(
-                    submittable -> new ProcessingCertificate(
-                            submittable, Archive.Ena, ProcessingStatusEnum.Completed, submittable.getAccession())).collect(Collectors.toList());
-        } else {
-            processingCertificateList = submissionEnvelope.allSubmissionItemsStream().map(
-                    submittable -> new ProcessingCertificate(
-                            submittable, Archive.Ena, ProcessingStatusEnum.Error)).collect(Collectors.toList());
+
+        List<ProcessingCertificate> processingCertificateList = new ArrayList<>();
+
+        ProcessingStatusEnum outcome = (validationResultList.isEmpty()) ? COMPLETED : ERROR;
+
+        Map<String,String> errorLookup = new HashMap<>();
+
+        for (SingleValidationResult vr : validationResultList){
+            errorLookup.put(
+                    vr.getEntityUuid(),
+                    vr.getMessage()
+            );
+        }
+
+        if (!validationResultList.isEmpty()){
+            logger.error("error messages during submission: {}",validationResultList );
+        }
+
+        for (Submittable submittable : submissionEnvelope.allSubmissionItems()){
+            if (Sample.class.isAssignableFrom(submittable.getClass()) || Project.class.isAssignableFrom(submittable.getClass())){
+                continue; //these objects aren't owned by ENA
+            }
+
+            ProcessingCertificate cert = new ProcessingCertificate(
+                    submittable,
+                    Archive.Ena,
+                    outcome
+            );
+            if (errorLookup.containsKey(submittable.getId())){
+                cert.setMessage(errorLookup.get(submittable.getId()));
+            }
+            if (submittable.isAccessioned()){
+                cert.setAccession(submittable.getAccession());
+            }
+            processingCertificateList.add(cert);
         }
 
 
-        return new ProcessingCertificateEnvelope(submissionEnvelope.getSubmission().getId(),processingCertificateList);
+
+        return new ProcessingCertificateEnvelope(submissionEnvelope.getSubmission().getId(), processingCertificateList);
     }
 
     private void injectPathAndChecksum(SubmissionEnvelope submissionEnvelope) {
         Map<String, UploadedFile> uploadedFileMap = filesByFilename(submissionEnvelope.getUploadedFiles());
         submissionEnvelope.getAssayData().forEach(assayData -> {
-            assayData.getFiles().forEach( file -> {
+            assayData.getFiles().forEach(file -> {
                 UploadedFile uploadedFile = uploadedFileMap.get(file.getName());
                 file.setChecksum(uploadedFile.getChecksum());
-                file.setName(uploadedFile.getPath());
+                file.setName(fileMoveService.getRelativeFilePath(uploadedFile.getPath()));
             });
         });
     }
 
     private void moveUploadedFilesToArchive(SubmissionEnvelope submissionEnvelope) {
-        submissionEnvelope.getUploadedFiles().forEach( uploadedFile -> {
+        submissionEnvelope.getUploadedFiles().forEach(uploadedFile -> {
             fileMoveService.moveFile(uploadedFile.getPath());
         });
     }
