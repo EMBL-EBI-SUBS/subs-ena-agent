@@ -31,6 +31,9 @@ public class FileMoveService {
     @Value("${ena.file_move.logFilePath}")
     private String logFilePath;
 
+    @Value("${spring.profiles.active:dev}")
+    private String activeProfile;
+
     private static final String FILE_SEPARATOR = System.getProperty("file.separator");
 
     public String getRelativeFilePath(String sourcePath) {
@@ -89,7 +92,8 @@ public class FileMoveService {
                 String.join(FILE_SEPARATOR, scriptPath, "move_file_to_archive_storage.sh"),
                 relativeFilePath,
                 sourceBasePath,
-                webinFolderPath
+                webinFolderPath,
+                activeProfile
         );
     }
 }
