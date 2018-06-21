@@ -39,6 +39,9 @@ public class EnaAgentSubmissionsProcessor {
     @Value("${ena.file_move.webinFolderPath}")
     private String webinFolderPath;
 
+    @Value("${spring.profiles.active:dev}")
+    private String activeProfile;
+
     RabbitMessagingTemplate rabbitMessagingTemplate;
 
     ENAProcessor enaProcessor;
@@ -141,7 +144,7 @@ public class EnaAgentSubmissionsProcessor {
             assayData.getFiles().forEach(file -> {
                 UploadedFile uploadedFile = uploadedFileMap.get(file.getName());
                 file.setChecksum(uploadedFile.getChecksum());
-                file.setName(fileMoveService.getRelativeFilePath(uploadedFile.getPath()));
+                file.setName(String.join("/", activeProfile, fileMoveService.getRelativeFilePath(uploadedFile.getPath())));
             });
         });
     }
