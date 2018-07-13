@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.messaging.converter.MessageConverter;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.subs.data.component.Archive;
+import uk.ac.ebi.subs.data.component.File;
 import uk.ac.ebi.subs.data.status.ProcessingStatusEnum;
 import uk.ac.ebi.subs.data.submittable.Project;
 import uk.ac.ebi.subs.data.submittable.Sample;
@@ -23,13 +24,12 @@ import uk.ac.ebi.subs.processing.SubmissionEnvelope;
 import uk.ac.ebi.subs.processing.UpdatedSamplesEnvelope;
 import uk.ac.ebi.subs.processing.fileupload.UploadedFile;
 import uk.ac.ebi.subs.validator.data.SingleValidationResult;
-import uk.ac.ebi.subs.validator.data.ValidationResult;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 public class EnaAgentSubmissionsProcessor {
@@ -79,6 +79,7 @@ public class EnaAgentSubmissionsProcessor {
     public void handleSubmission(SubmissionEnvelope submissionEnvelope) {
         moveUploadedFilesToArchive(submissionEnvelope);
 
+
         ProcessingCertificateEnvelope processingCertificateEnvelope = processSubmission(submissionEnvelope);
 
         logger.info("received submission {}, most recent handler was ",
@@ -90,10 +91,7 @@ public class EnaAgentSubmissionsProcessor {
     }
 
     ProcessingCertificateEnvelope processSubmission(SubmissionEnvelope submissionEnvelope) {
-
-        if (submissionEnvelope.getAssayData().size() > 0) {
-            injectPathAndChecksum(submissionEnvelope);
-        }
+        injectPathAndChecksum(submissionEnvelope);
 
         final List<SingleValidationResult> validationResultList = enaProcessor.process(submissionEnvelope);
 
@@ -101,21 +99,21 @@ public class EnaAgentSubmissionsProcessor {
 
         ProcessingStatusEnum outcome = (validationResultList.isEmpty()) ? COMPLETED : ERROR;
 
-        Map<String,String> errorLookup = new HashMap<>();
+        Map<String, String> errorLookup = new HashMap<>();
 
-        for (SingleValidationResult vr : validationResultList){
+        for (SingleValidationResult vr : validationResultList) {
             errorLookup.put(
                     vr.getEntityUuid(),
                     vr.getMessage()
             );
         }
 
-        if (!validationResultList.isEmpty()){
-            logger.error("error messages during submission: {}",validationResultList );
+        if (!validationResultList.isEmpty()) {
+            logger.error("error messages during submission: {}", validationResultList);
         }
 
-        for (Submittable submittable : submissionEnvelope.allSubmissionItems()){
-            if (Sample.class.isAssignableFrom(submittable.getClass()) || Project.class.isAssignableFrom(submittable.getClass())){
+        for (Submittable submittable : submissionEnvelope.allSubmissionItems()) {
+            if (Sample.class.isAssignableFrom(submittable.getClass()) || Project.class.isAssignableFrom(submittable.getClass())) {
                 continue; //these objects aren't owned by ENA
             }
 
@@ -124,15 +122,14 @@ public class EnaAgentSubmissionsProcessor {
                     Archive.Ena,
                     outcome
             );
-            if (errorLookup.containsKey(submittable.getId())){
+            if (errorLookup.containsKey(submittable.getId())) {
                 cert.setMessage(errorLookup.get(submittable.getId()));
             }
-            if (submittable.isAccessioned()){
+            if (submittable.isAccessioned()) {
                 cert.setAccession(submittable.getAccession());
             }
             processingCertificateList.add(cert);
         }
-
 
 
         return new ProcessingCertificateEnvelope(submissionEnvelope.getSubmission().getId(), processingCertificateList);
@@ -140,13 +137,16 @@ public class EnaAgentSubmissionsProcessor {
 
     private void injectPathAndChecksum(SubmissionEnvelope submissionEnvelope) {
         Map<String, UploadedFile> uploadedFileMap = filesByFilename(submissionEnvelope.getUploadedFiles());
-        submissionEnvelope.getAssayData().forEach(assayData -> {
-            assayData.getFiles().forEach(file -> {
+
+        Stream<File> assayDataFileStream = submissionEnvelope.getAssayData().stream().flatMap(ad -> ad.getFiles().stream());
+        Stream<File> analysisFileStream = submissionEnvelope.getAnalyses().stream().flatMap(a -> a.getFiles().stream());
+
+        Stream.concat(assayDataFileStream, analysisFileStream).forEach(file -> {
                 UploadedFile uploadedFile = uploadedFileMap.get(file.getName());
                 file.setChecksum(uploadedFile.getChecksum());
                 file.setName(String.join("/", activeProfile, fileMoveService.getRelativeFilePath(uploadedFile.getPath())));
-            });
         });
+
     }
 
     private void moveUploadedFilesToArchive(SubmissionEnvelope submissionEnvelope) {
