@@ -10,5 +10,5 @@ ena:
     logFilePath: /data/filemove.log
   typeProcessing:
     samplesEnabled: false
-  action_services: StudyActionService,AssayActionService,AssayDataActionService
+  action_services: StudyActionService,AssayActionService,AssayDataActionService,SequenceVariationAnalysisActionService
 
