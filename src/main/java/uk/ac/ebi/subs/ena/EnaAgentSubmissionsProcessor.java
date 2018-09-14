@@ -144,6 +144,7 @@ public class EnaAgentSubmissionsProcessor {
         Stream.concat(assayDataFileStream, analysisFileStream).forEach(file -> {
                 UploadedFile uploadedFile = uploadedFileMap.get(file.getName());
                 file.setChecksum(uploadedFile.getChecksum());
+                file.setChecksumMethod("MD5");
                 file.setName(String.join("/", activeProfile, fileMoveService.getRelativeFilePath(uploadedFile.getPath())));
         });
 
