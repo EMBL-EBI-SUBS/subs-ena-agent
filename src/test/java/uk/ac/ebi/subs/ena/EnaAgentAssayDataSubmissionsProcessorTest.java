@@ -55,8 +55,13 @@ public class EnaAgentAssayDataSubmissionsProcessorTest {
     @Value("${ena.file_move.webinFolderPath}")
     String webinFolderPath;
 
+    @Value("${spring.profiles.active:dev}")
+    private String activeProfile;
+
     private String REMOTE_MKDIR_FOR_WEBIN_TEST;
     private String REMOTE_DELETE_DIR_FROM_WEBIN_TEST;
+
+    private static final String ENA_AGENT_SUBMISSIONS_PROCESSOR_TEST_PATH = "EnaAgentSubmissionsProcessorTest";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EnaAgentAssayDataSubmissionsProcessorTest.class);
 
@@ -69,9 +74,10 @@ public class EnaAgentAssayDataSubmissionsProcessorTest {
     @Before
     public void setup() {
         REMOTE_MKDIR_FOR_WEBIN_TEST =
-                "cd "  + webinFolderPath + " && mkdir -p EnaAgentSubmissionsProcessorTest/to/the/file";
+                "cd "  + webinFolderPath + " && mkdir -p "
+                    + String.join("/", activeProfile, ENA_AGENT_SUBMISSIONS_PROCESSOR_TEST_PATH, "to/the/file");
         REMOTE_DELETE_DIR_FROM_WEBIN_TEST =
-                "cd "  + webinFolderPath + " && rm -rf EnaAgentSubmissionsProcessorTest";
+                "cd "  + webinFolderPath + " && rm -rf " + String.join("/", activeProfile, ENA_AGENT_SUBMISSIONS_PROCESSOR_TEST_PATH);
     }
 
     @Test
@@ -103,7 +109,7 @@ public class EnaAgentAssayDataSubmissionsProcessorTest {
 
         UploadedFile uploadedFile = new UploadedFile();
         uploadedFile.setChecksum("1234567890abcdefabcd1234567890ab");
-        final String remoteFilePath = "ready_to_agent/EnaAgentSubmissionsProcessorTest/to/the/file";
+        final String remoteFilePath = "ready_to_agent/" + ENA_AGENT_SUBMISSIONS_PROCESSOR_TEST_PATH + "/to/the/file";
 
         uploadedFile.setPath(String.join("/", remoteFilePath, filename));
         uploadedFile.setFilename(filename);
@@ -128,7 +134,8 @@ public class EnaAgentAssayDataSubmissionsProcessorTest {
 
         final List<String> filePaths =
                 submissionEnvelope.getUploadedFiles().stream().map(uploadedFileFromSubmissionEnvelope ->
-                        fileMoveService.getRelativeFilePath(uploadedFileFromSubmissionEnvelope.getPath()))
+                            String.join("/", activeProfile, fileMoveService.getRelativeFilePath(uploadedFileFromSubmissionEnvelope.getPath()))
+                        )
                         .collect(Collectors.toList());
 
         submissionEnvelope.getAssayData().forEach(processedAssayData -> {
@@ -177,7 +184,7 @@ public class EnaAgentAssayDataSubmissionsProcessorTest {
     private String getRemoteServerPath(String remotePath) {
         StringBuilder sb = remoteLogin();
         sb.append(":");
-        sb.append(String.join("/", webinFolderPath, remotePath));
+        sb.append(String.join("/", webinFolderPath, activeProfile, remotePath));
 
         return sb.toString();
     }
