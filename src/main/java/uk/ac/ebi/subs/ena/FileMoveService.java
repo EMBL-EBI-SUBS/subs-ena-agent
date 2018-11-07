@@ -8,6 +8,10 @@ import org.springframework.stereotype.Service;
 import java.io.File;
 import java.util.Arrays;
 
+/**
+ * This service responsible to move an uploaded file to ENA's 'webin' folder.
+ * It executes an external shell script to do the actual file movement using SSH/SCP.
+ */
 @Service
 public class FileMoveService {
 

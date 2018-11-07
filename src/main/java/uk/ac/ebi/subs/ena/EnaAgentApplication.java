@@ -11,7 +11,7 @@ import org.springframework.boot.system.ApplicationPidFileWriter;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
 
-@ComponentScan(value = {"uk.ac.ebi.subs.messaging", "uk.ac.ebi.subs.validator.messaging"})
+@ComponentScan(value = {"uk.ac.ebi.subs.messaging"})
 @SpringBootApplication(exclude={MongoAutoConfiguration.class, MongoDataAutoConfiguration.class})
 @ComponentScan(excludeFilters = {
         @ComponentScan.Filter(type = FilterType.CUSTOM, classes = TypeExcludeFilter.class),
