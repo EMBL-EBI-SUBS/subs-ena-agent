@@ -31,6 +31,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 
+/**
+ * This class responsible for handling/processing the submission to the ENA archive
+ * and move the uploaded file to ENA's 'webin' folder.
+ */
 @Service
 public class EnaAgentSubmissionsProcessor {
 
@@ -79,7 +83,6 @@ public class EnaAgentSubmissionsProcessor {
     public void handleSubmission(SubmissionEnvelope submissionEnvelope) {
         moveUploadedFilesToArchive(submissionEnvelope);
 
-
         ProcessingCertificateEnvelope processingCertificateEnvelope = processSubmission(submissionEnvelope);
 
         logger.info("received submission {}, most recent handler was ",
@@ -87,7 +90,6 @@ public class EnaAgentSubmissionsProcessor {
         logger.info("processed submission {}", submissionEnvelope.getSubmission().getId());
         rabbitMessagingTemplate.convertAndSend(Exchanges.SUBMISSIONS, Topics.EVENT_SUBMISSION_AGENT_RESULTS, processingCertificateEnvelope);
         logger.info("sent submission {}", submissionEnvelope.getSubmission().getId());
-
     }
 
     ProcessingCertificateEnvelope processSubmission(SubmissionEnvelope submissionEnvelope) {
@@ -131,7 +133,6 @@ public class EnaAgentSubmissionsProcessor {
             processingCertificateList.add(cert);
         }
 
-
         return new ProcessingCertificateEnvelope(submissionEnvelope.getSubmission().getId(), processingCertificateList);
     }
 
@@ -147,7 +148,6 @@ public class EnaAgentSubmissionsProcessor {
                 file.setChecksumMethod("MD5");
                 file.setName(String.join("/", activeProfile, fileMoveService.getRelativeFilePath(uploadedFile.getPath())));
         });
-
     }
 
     private void moveUploadedFilesToArchive(SubmissionEnvelope submissionEnvelope) {

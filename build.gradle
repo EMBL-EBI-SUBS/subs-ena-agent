@@ -1,5 +1,5 @@
 group 'uk.ac.ebi.subs'
-version '2.5.1-SNAPSHOT'
+version '2.5.2-SNAPSHOT'
 
 buildscript {
     repositories {
