@@ -49,7 +49,7 @@ public class FileMoveService {
         final String relativeFilePath = getRelativeFilePath(sourcePath);
         final String sourceBasePath = sourcePath.substring(0, sourcePath.indexOf(sourceBaseFolder) + sourceBaseFolder.length());
 
-        LOGGER.info("Moving a file from {} to {}.", sourcePath, String.join(FILE_SEPARATOR, activeProfile, webinFolderPath, relativeFilePath));
+        LOGGER.info("Moving a file from {} to {}.", sourcePath, String.join(FILE_SEPARATOR, webinFolderPath, activeProfile, relativeFilePath));
 
         String[] moveCommandToExecute= {
                 "ssh",
