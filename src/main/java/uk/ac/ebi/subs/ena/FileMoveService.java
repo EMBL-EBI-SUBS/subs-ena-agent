@@ -59,16 +59,19 @@ public class FileMoveService {
 
         LOGGER.info("Executing the following command: {}.", Arrays.toString(moveCommandToExecute));
 
-        ProcessBuilder processBuilder = new ProcessBuilder(moveCommandToExecute);
+        executeFileMoveCommand(sourcePath, moveCommandToExecute);
+    }
 
+    private void executeFileMoveCommand(String sourcePath, String[] moveCommandToExecute) {
         int exitValue;
-        Process process;
+
+        ProcessBuilder processBuilder = new ProcessBuilder(moveCommandToExecute);
 
         try {
             File logFile = new File(logFilePath);
             processBuilder.redirectErrorStream(true);
-            processBuilder.redirectOutput(logFile);
-            process = processBuilder.start();
+            processBuilder.redirectOutput(redirectOutput(logFile));
+            Process process = processBuilder.start();
             process.waitFor();
             exitValue = process.exitValue();
         } catch (Exception e) {
@@ -80,6 +83,10 @@ public class FileMoveService {
             throw new RuntimeException(
                     String.format("The file move command went wrong with file: %s.", sourcePath));
         }
+    }
+
+    private ProcessBuilder.Redirect redirectOutput(File logFile) {
+        return ProcessBuilder.Redirect.appendTo(logFile);
     }
 
     private String remoteLogin() {
