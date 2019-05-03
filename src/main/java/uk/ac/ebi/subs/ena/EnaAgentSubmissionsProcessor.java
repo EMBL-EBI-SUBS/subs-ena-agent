@@ -133,7 +133,8 @@ public class EnaAgentSubmissionsProcessor {
             processingCertificateList.add(cert);
         }
 
-        return new ProcessingCertificateEnvelope(submissionEnvelope.getSubmission().getId(), processingCertificateList);
+        return new ProcessingCertificateEnvelope(
+                submissionEnvelope.getSubmission().getId(), processingCertificateList, submissionEnvelope.getJWTToken());
     }
 
     private void injectPathAndChecksum(SubmissionEnvelope submissionEnvelope) {
