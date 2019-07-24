@@ -5,10 +5,20 @@ ena:
   password: ${enaPassword}
   submission:
     url: https://www-test.ebi.ac.uk/ena/submit/drop-box/submit
+  fileMoveProcessUserName: fileuploadusername
   file_move:
     webinFolderPath: /fire/staging/era/upload/Webin-46220
     logFilePath: /data/filemove.log
+    sourceBaseFolder: ready_to_agent
+    remoteHostName: sra-login-1
+    scriptPath: /homes/test_user/file-upload
   typeProcessing:
     samplesEnabled: false
   action_services: StudyActionService,AssayActionService,AssayDataActionService,SequenceVariationAnalysisActionService
 
+spring:
+  boot:
+    admin:
+      url: http://localhost:9000
+server:
+  port: 0
