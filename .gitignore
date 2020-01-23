@@ -11,3 +11,5 @@ gradle.properties
 */application.pid
 **/application.pid
 *.iml
+
+/LOG_HOME_IS_UNDEFINED/
