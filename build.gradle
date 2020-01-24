@@ -1,5 +1,5 @@
 group 'uk.ac.ebi.subs'
-version '2.7.1-SNAPSHOT'
+version '2.8.0-SNAPSHOT'
 
 buildscript {
     repositories {
@@ -35,7 +35,7 @@ repositories {
 }
 
 dependencies {
-    compile ("uk.ac.ebi.subs:subs-ena-core-service:2.6.1-SNAPSHOT")
+    compile ("uk.ac.ebi.subs:subs-ena-core-service:2.6.2-SNAPSHOT")
 
     compile 'de.codecentric:spring-boot-admin-starter-client:1.5.7'
 
