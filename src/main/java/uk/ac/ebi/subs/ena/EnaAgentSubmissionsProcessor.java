@@ -114,9 +114,9 @@ public class EnaAgentSubmissionsProcessor {
             logger.error("error messages during submission: {}", validationResultList);
         }
 
-        for (Submittable submittable : submissionEnvelope.allSubmissionItems()) {
+        submissionEnvelope.allSubmissionItemsStream().forEach(submittable -> {
             if (Sample.class.isAssignableFrom(submittable.getClass()) || Project.class.isAssignableFrom(submittable.getClass())) {
-                continue; //these objects aren't owned by ENA
+                return;
             }
 
             ProcessingCertificate cert = new ProcessingCertificate(
@@ -131,7 +131,7 @@ public class EnaAgentSubmissionsProcessor {
                 cert.setAccession(submittable.getAccession());
             }
             processingCertificateList.add(cert);
-        }
+        });
 
         return new ProcessingCertificateEnvelope(
                 submissionEnvelope.getSubmission().getId(), processingCertificateList, submissionEnvelope.getJWTToken());
