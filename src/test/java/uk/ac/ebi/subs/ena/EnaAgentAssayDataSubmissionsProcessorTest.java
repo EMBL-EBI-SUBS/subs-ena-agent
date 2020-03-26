@@ -29,6 +29,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -90,6 +91,7 @@ public class EnaAgentAssayDataSubmissionsProcessorTest {
         study.setId(UUID.randomUUID().toString());
         uk.ac.ebi.subs.data.Submission submission = new uk.ac.ebi.subs.data.Submission();
         submission.setTeam(team);
+        submission.setSubmissionDate(new Date());
         SubmissionEnvelope submissionEnvelope = new SubmissionEnvelope(submission);
         submissionEnvelope.getStudies().add(study);
 

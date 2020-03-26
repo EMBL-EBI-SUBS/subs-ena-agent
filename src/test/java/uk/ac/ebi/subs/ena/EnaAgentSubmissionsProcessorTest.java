@@ -18,6 +18,7 @@ import uk.ac.ebi.subs.processing.ProcessingCertificateEnvelope;
 import uk.ac.ebi.subs.processing.SubmissionEnvelope;
 
 import java.util.Collections;
+import java.util.Date;
 import java.util.UUID;
 
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -41,6 +42,7 @@ public class EnaAgentSubmissionsProcessorTest {
         study.setId(UUID.randomUUID().toString());
         uk.ac.ebi.subs.data.Submission submission = new uk.ac.ebi.subs.data.Submission();
         submission.setTeam(team);
+        submission.setSubmissionDate(new Date());
         SubmissionEnvelope submissionEnvelope = new SubmissionEnvelope(submission);
         submissionEnvelope.getStudies().add(study);
         final Sample sample = TestHelper.getSample(alias, team);
@@ -66,6 +68,7 @@ public class EnaAgentSubmissionsProcessorTest {
         study.setId(UUID.randomUUID().toString());
         uk.ac.ebi.subs.data.Submission submission = new uk.ac.ebi.subs.data.Submission();
         submission.setTeam(team);
+        submission.setSubmissionDate(new Date());
         SubmissionEnvelope submissionEnvelope = new SubmissionEnvelope(submission);
         submissionEnvelope.getStudies().add(study);
         final ProcessingCertificateEnvelope processingCertificateEnvelope = enaAgentSubmissionsProcessor.processSubmission(submissionEnvelope);
