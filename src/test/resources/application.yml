@@ -1,5 +1,5 @@
 ena:
-  hostname: sra-login-1
+  hostname: sra-login
   login_name: ${enaLoginName}
   password: ${enaPassword}
   processor_list: ENAStudyProcessor,ENASampleProcessor,ENAExperimentProcessor
@@ -9,7 +9,7 @@ ena:
   file_move:
     webinFolderPath: /fire/staging/era/upload/Webin-46220
     sourceBaseFolder: ready_to_agent
-    remoteHostName: sra-login-1
+    remoteHostName: sra-login
     scriptPath: /homes/test_user/file-upload
     logFilePath: /data/filemove.log
 
