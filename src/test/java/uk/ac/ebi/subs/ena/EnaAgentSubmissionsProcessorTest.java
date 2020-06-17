@@ -34,6 +34,8 @@ public class EnaAgentSubmissionsProcessorTest {
     @Autowired
     EnaAgentSubmissionsProcessor enaAgentSubmissionsProcessor;
 
+    private static final String ILLUMINA_GENOME_ANALYZER_INSTRUMENT_MODEL = "Illumina Genome Analyzer";
+
     @Test
     public void submissionTest() throws Exception {
         String alias = UUID.randomUUID().toString();
@@ -47,7 +49,7 @@ public class EnaAgentSubmissionsProcessorTest {
         submissionEnvelope.getStudies().add(study);
         final Sample sample = TestHelper.getSample(alias, team);
         submissionEnvelope.getSamples().add(sample);
-        final Assay assay = TestHelper.getAssay(alias, team, TestAccessions.BIOSAMPLE_ACCESSION, alias);
+        final Assay assay = TestHelper.getAssay(alias, team, TestAccessions.BIOSAMPLE_ACCESSION, alias, ILLUMINA_GENOME_ANALYZER_INSTRUMENT_MODEL);
         submissionEnvelope.getAssays().add(assay);
         final ProcessingCertificateEnvelope processingCertificateEnvelope = enaAgentSubmissionsProcessor.processSubmission(submissionEnvelope);
         ProcessingCertificate studyProcessingCertificate = new ProcessingCertificate(study, Archive.Ena, ProcessingStatusEnum.Completed, study.getAccession());

@@ -64,6 +64,8 @@ public class EnaAgentAssayDataSubmissionsProcessorTest {
 
     private static final String ENA_AGENT_SUBMISSIONS_PROCESSOR_TEST_PATH = "EnaAgentSubmissionsProcessorTest";
 
+    private static final String ILLUMINA_GENOME_ANALYZER_INSTRUMENT_MODEL = "Illumina Genome Analyzer";
+
     private static final Logger LOGGER = LoggerFactory.getLogger(EnaAgentAssayDataSubmissionsProcessorTest.class);
 
     @Autowired
@@ -98,7 +100,8 @@ public class EnaAgentAssayDataSubmissionsProcessorTest {
         final Sample sample = TestHelper.getSample(alias, team);
         submissionEnvelope.getSamples().add(sample);
 
-        final Assay assay = TestHelper.getAssay(alias, team, TestAccessions.BIOSAMPLE_ACCESSION, alias);
+        final Assay assay = TestHelper.getAssay(
+                alias, team, TestAccessions.BIOSAMPLE_ACCESSION, alias, ILLUMINA_GENOME_ANALYZER_INSTRUMENT_MODEL);
         submissionEnvelope.getAssays().add(assay);
 
         final String filename = UUID.randomUUID().toString() + "_test.fastq.gz";
@@ -176,8 +179,8 @@ public class EnaAgentAssayDataSubmissionsProcessorTest {
             exitValue = process.exitValue();
         } catch (Exception e) {
             throw new RuntimeException(
-                    String.format("Could not execute the following command on the remote server: %s",
-                            String.join(" ", command)));
+                    String.format("Could not execute the following command on the remote server: %s. The root cause: %s",
+                            String.join(" ", command), e.getMessage()));
         }
 
         return exitValue;
