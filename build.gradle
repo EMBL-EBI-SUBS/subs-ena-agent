@@ -22,7 +22,7 @@ repositories {
 }
 
 group 'uk.ac.ebi.subs'
-version '2.12.1-SNAPSHOT'
+version '2.12.1'
 
 mainClassName = "uk.ac.ebi.subs.ena.EnaAgentApplication"
 
