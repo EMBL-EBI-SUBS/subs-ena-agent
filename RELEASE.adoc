@@ -4,6 +4,14 @@
 This pages contains links to release notes for DSP's ENA Agent.
 
 [[section]]
+== v2.12.2 Release notes
+
+Bug fixes:
+--------------
+1. [SUB-1946] Fixed handling entities with attributes that has null value.
+--------------
+
+[[section]]
 == v2.12.1 Release notes
 
 Bug fixes:
